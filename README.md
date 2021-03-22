@@ -124,6 +124,13 @@ A2 1283
 ecc ecc...
 -------------------------
 ```
+When you enable Pins you are indicating that you want that measurement but you are not indicating a sequence of pins, a reading order.
+The reading order is invariable and is (if all 12 pins are enabled) 
+A7 A6 A5 A4 A3 A2 A1 A0 A8 A9 A10 A11
+you don't know at any given moment which one will be at the top of the buffer. In the example above, at the top was A1.
+For this reason, always test ```lastMis[xi].pin``` 
+
+
 #### if you have other patience there are other peculiarities
 
 ## Library Reference with TIPs and Warnings
