@@ -5,12 +5,10 @@
 /*
   DueAdcFast.h - DueAdcFast header file
   For instructions, go to https://github.com/AntonioPrevitali/DueAdcFast
-
-  Created by Antonio Previtali March, 2019.
+  Created by Antonio Previtali March, 2021.
   
   This library is free software; you can redistribute it and/or
   modify it under the terms of the Gnu general public license version 3
-
 */
 
 typedef struct DueAdcFastMeasure
@@ -34,6 +32,7 @@ class DueAdcFast {
     uint32_t ReadAnalogPin(uint8_t pin);   // attende che la misura sia disponibile e ritorna il valore.
     uint32_t FindValueForPin(uint8_t pin); // cerca nel Buffer l'ultima misura disponibile per quel pin.
     void Stop();                         // Stop DueAdcFast.  Si può tornare ad usare la analogRead originale.
+    void DisEnabPin(void);              // disabilita i pin abilitati precedentemente con EnablePin/Dif
     uint16_t getMeasures(uint16_t nrMeas, DueAdcFastMeasure meas[], uint32_t* xtime); // see code..
     boolean  isMeasures(void);  // per testare se esistono misure disponibili prima di chiamare la getMeasures
                                 // ma meglio è chiamare la getMeasures che ritorna zero se non ve ne sono.
