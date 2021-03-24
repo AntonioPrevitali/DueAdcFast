@@ -235,7 +235,21 @@ It is also possible to do some pins in a differential way and some in a normal w
 `EnablePin(A7);`   // obviously A4 is not available is already busy with A5
 
 
+## Output of Sample4 is:
 
-
-
-
+```Sample4 test...
+let's start with 1000 original analogReads
+1000 analogRead original time in microseconds is 4215
+I enable pins A0 and A1 in DueAdcF 
+Start now DueAdcF
+DueAdcF.MeasureSpeed() return 2.00 microseconds (it is the time for the PDC in the background to make 2 measurements (nr. of pins enabled) 
+1000 DueAdcF.ReadAnalogPin(A0) time is 2001
+If you enable just one pin the ReadAnalogPin time will decrease to something like 1180
+If you enable many pins the time will increase!, But FindValueForPin could to help
+1000 DueAdcF.FindValueForPin(A0) time is 1507
+DueAdcF.getMeasures return 512 measures. it takes to do this  285 microsecondi
+PDC is hardware and runs at 1Mhz! But going into the buffer and getting the values takes time!
+Ok stop DueAdcF and try with DueAdcF.oldAnalogRead
+1000 DueAdcF.oldAnalogRead(A0) time is 2710
+Thanks for your attention, and I hope DueAdcF is useful to you. If you liked DueAdcF put a +! 
+```
