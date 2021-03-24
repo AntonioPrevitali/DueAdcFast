@@ -1,0 +1,16 @@
+DueAdcFast	KEYWORD1
+DueAdcF	KEYWORD1
+DueAdcFastMeasure	KEYWORD1
+EnablePin	KEYWORD2
+EnableDif	KEYWORD2
+Start	KEYWORD2
+Start1Mhz	KEYWORD2
+MeasureSpeed	KEYWORD2
+ReadAnalogPin	KEYWORD2
+FindValueForPin	KEYWORD2
+Stop	KEYWORD2
+DisEnabPin	KEYWORD2
+getMeasures	KEYWORD2
+isMeasures	KEYWORD2
+to10BitResolution	KEYWORD2
+oldAnalogRead	KEYWORD2
