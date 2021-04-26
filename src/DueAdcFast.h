@@ -44,11 +44,20 @@ class DueAdcFast {
     // è compatibile con originale solo se usata sul medesimo PIN.
     // questa lavora solo a 12 bit eventualmente usa to10BitResolution
     // void Test();  // only for debug...
+    uint32_t FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM); // Va nel buffer indietreggia di pSkip posizioni
+                                                                      // se pSkip zero non indietreggia
+                                                                      // cerca le ultime nrM misure disponibile per quel pin.
+                                                                      // fa la media delle nrM misure e ritorna il valore.
+    void SetAllDifGain(uint8_t xgain);  // Imposta il Gain x tutti i canali differenziali 
+                                        // xgain = 0 = default             4095=+3.300v 0=-3.300v
+                                        // xgain = 1 sensibilita aumentata 4095=+1.650v 0=-1.650v
+                                        // xgain = 2 ancora piu sensibile  4095=+0.825v 0=-0.825v                                                             
   private:
     const uint8_t    chtopin[16] = {A7, A6, A5, A4, A3, A2, A1, A0, 0, 0, A8, A9, A10, A11, 0, 0};
     volatile boolean okHandler = false;
     uint16_t         enablPin = 0;      // pin abilitati
     uint16_t         enablDif = 0;      // pin abilitati in differential mode.
+    uint8_t          allDifGain = 0;    // Gain per i canali differenziali 0..2
     uint16_t         enabcha = 0;       // canali abilitati.
     boolean          okStart = false;   // true after Start is call
     uint16_t         BufSiz = 0;            // buffer size
