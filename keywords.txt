@@ -14,3 +14,5 @@ getMeasures	KEYWORD2
 isMeasures	KEYWORD2
 to10BitResolution	KEYWORD2
 oldAnalogRead	KEYWORD2
+FindAvgForPin	KEYWORD2
+SetAllDifGain	KEYWORD2
