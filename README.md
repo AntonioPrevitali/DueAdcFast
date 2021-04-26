@@ -9,11 +9,15 @@ The library then allows your code to interact with the buffer in memory obtainin
 
 ## Installation
 
+library is now available in the arduino library manager. 
+Then open the arduino library manager and search for DueAdcFast
+Thanks to the library manager management team for adding this library. 
+
+If you want to install manually do so:
 1. [Download](https://github.com/AntonioPrevitali/DueAdcFast/releases) the Latest release from GitHub.
 2. Remove the '-version' from Folder name and paste Folder on your Library folder.
 3. Restart Arduino Software.
 
-Work in progress to make the library available in the arduino library manager. 
 
 ## Getting Started
 
@@ -253,3 +257,25 @@ Ok stop DueAdcF and try with DueAdcF.oldAnalogRead
 1000 DueAdcF.oldAnalogRead(A0) time is 2710
 Thanks for your attention, and I hope DueAdcF is useful to you. If you liked DueAdcF put a +! 
 ```
+
+## Version 1.1 adds 2 new methods :
+
+`uint32_t FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM)`
+
+Go to buffer, step back pSkip positions.
+if pSkip zero does not step back.
+
+look for the latest nrM measurements available for that pin;
+averages the number of measurements and returns the value.
+
+
+`void SetAllDifGain(uint8_t xgain)`
+
+Set the gain for all differential channels (only for differential enabled pin)
+
+xgain = 0 default               4095=+3.300v 0=-3.300v. return 4095 when +3.3 volt is on Pin, return 0 when -3.3 Volt is on Pin
+
+xgain = 1 increased sensitivity 4095=+1.650v 0=-1.650v.
+
+xgain = 2 even more sensitive   4095=+0.825v 0=-0.825v 
+
