@@ -255,7 +255,7 @@ DueAdcF.getMeasures return 512 measures. it takes to do this  285 microsecondi
 PDC is hardware and runs at 1Mhz! But going into the buffer and getting the values takes time!
 Ok stop DueAdcF and try with DueAdcF.oldAnalogRead
 1000 DueAdcF.oldAnalogRead(A0) time is 2710
-Thanks for your attention, and I hope DueAdcF is useful to you. If you liked DueAdcF put a +! 
+Thanks for your attention, and I hope DueAdcF is useful to you. If you liked DueAdcF put Star
 ```
 
 ## Version 1.1 adds 2 new methods :
