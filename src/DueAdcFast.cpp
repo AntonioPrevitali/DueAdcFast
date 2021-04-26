@@ -116,6 +116,7 @@ void DueAdcFast::DisEnabPin(void)
 {
   enablPin = 0;
   enablDif = 0;
+  allDifGain = 0;
 }
 
 void DueAdcFast::memRegister()
@@ -150,11 +151,16 @@ void DueAdcFast::Start(uint8_t prescaler)
   gostart(true, (uint16_t) prescaler);
 }
 
+void DueAdcFast::SetAllDifGain(uint8_t xgain)
+{
+ if (xgain <= 2) allDifGain = xgain; 
+}
 
 void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
 {
   uint32_t xcher = 0;
   uint32_t xcor = 0;
+  uint32_t xcgr = 0;
   uint32_t xbit = 0;
   // determina i canali differenziali
   xbit = !!(enablDif & 2);  // DIFF A1 - A0
@@ -164,6 +170,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF7
              | ADC_COR_OFF6
              | ADC_COR_OFF7;
+    xcgr |=  ADC_CGR_GAIN6(allDifGain)
+             | ADC_CGR_GAIN7(allDifGain);
     enablPin &= 0B1111111111111110;  // A0 disable altready in differential mode from A1
   }
   xbit = !!(enablDif & 8);  // DIFF A3 - A2
@@ -173,6 +181,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF5
              | ADC_COR_OFF4
              | ADC_COR_OFF5;
+    xcgr |=  ADC_CGR_GAIN4(allDifGain)
+             | ADC_CGR_GAIN5(allDifGain);             
     enablPin &= 0B1111111111111011;
   }
   xbit = !!(enablDif & 32);  // DIFF A5 - A4
@@ -182,6 +192,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF3
              | ADC_COR_OFF2
              | ADC_COR_OFF3;
+    xcgr |=  ADC_CGR_GAIN2(allDifGain)
+             | ADC_CGR_GAIN3(allDifGain);             
     enablPin &= 0B1111111111101111;
   }
   xbit = !!(enablDif & 128);  // DIFF A7 - A6
@@ -191,6 +203,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF1
              | ADC_COR_OFF0
              | ADC_COR_OFF1;
+    xcgr |=  ADC_CGR_GAIN0(allDifGain)
+             | ADC_CGR_GAIN1(allDifGain);             
     enablPin &= 0B1111111110111111;
   }
   xbit = !!(enablDif & 256);  // DIFF A8 - A9
@@ -200,6 +214,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF11
              | ADC_COR_OFF10
              | ADC_COR_OFF11;
+    xcgr |=  ADC_CGR_GAIN10(allDifGain)
+             | ADC_CGR_GAIN11(allDifGain);             
     enablPin &= 0B1111110111111111;
   }
   xbit = !!(enablDif & 1024);  // DIFF A10 - A11
@@ -209,6 +225,8 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
              | ADC_COR_DIFF13
              | ADC_COR_OFF12
              | ADC_COR_OFF13;
+    xcgr |=  ADC_CGR_GAIN12(allDifGain)
+             | ADC_CGR_GAIN13(allDifGain);             
     enablPin &= 0B1111011111111111;
   }
   // determina in base ai Pin quali canali ADC abilitare.
@@ -279,7 +297,7 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
       NVIC_EnableIRQ(ADC_IRQn);  // default is disabled...
       ADC->ADC_PTCR = 1;
       okHandler = true;
-      ADC->ADC_CGR = 0;  // GAIN
+      ADC->ADC_CGR = xcgr;       // GAIN
       ADC->ADC_CHER = xcher;          // enable channels
       ADC->ADC_CHDR = ~xcher;         // disable channels
       enabcha = xcher;                // for use later see code
@@ -457,6 +475,69 @@ uint32_t DueAdcFast::FindValueForPin(uint8_t pin)
   return 0xFFFF;  // not found !
 }
 
+
+uint32_t DueAdcFast::FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM)
+{
+  uint16_t xch;
+  uint16_t xval;
+  uint16_t xchL;
+  uint16_t* prpr;
+  uint32_t curRPR;
+  uint16_t xi;
+  uint32_t sumavg;
+  boolean  okprimo;
+  if (okStart == false || pin < 54 || pin > 65 || nrM == 0) return 0xFFFF;
+  xch = g_APinDescription[pin].ulADCChannelNumber; // channel to wait
+  // controlla se canale e tra quelli che vengono raccolti/abilitati
+  if (!( enabcha & (1 << xch) )) return 0xFFFF;  // canale non enabled
+  xch = xch << 12; // like format of CHNB TAG
+  curRPR = ADC->ADC_RPR;
+  prpr = (uint16_t*) curRPR;
+  if (pSkip > 0)  // se richiesto indietreggia
+  {
+    prpr = prpr - pSkip;
+    if (prpr < Buffer)
+    {
+      pSkip = Buffer - prpr;
+      prpr = Buffer + BufSiz - pSkip;
+    }
+  }
+  // qui cerca l'ultima misura disponibile x quel pin.
+  // observe max last NumChEn measure...
+  okprimo = false;
+  sumavg = 0;
+  for (xi = 0; xi < NumChEn; xi++)
+  {
+    prpr--; // DMA carica valore e avanza il pointer.
+    if (prpr < Buffer) prpr = Buffer + BufSiz - 1;
+    xval = *prpr;
+    xchL = xval & 0xF000;  // CHNB TAG test
+    if (xch == xchL)
+      {
+        okprimo = true;
+        sumavg += (xval & 0xFFF);
+        break;
+      }
+  }
+  if (!okprimo) return  0xFFFF;  // not found !
+  if (nrM == 1) return sumavg;
+  // è già posizionato sul pin giusto per trovare i precedenti
+  // è sufficiente indietreggiare di NumChEn  
+  for (xi = 1; xi < nrM; xi++)  // parte da 1, uno già caricato in sumavg
+  {
+      prpr = prpr - NumChEn;   // salto indietro
+      if (prpr < Buffer)
+      {
+        pSkip = Buffer - prpr;
+        prpr = Buffer + BufSiz - pSkip;
+      }
+      xval = *prpr;
+      xchL = xval & 0xF000;  
+      if (xch != xchL) return 0xFFFF;  // CHNB TAG test NOT OK !
+      sumavg += (xval & 0xFFF);
+  }
+  return sumavg / (uint32_t) nrM;
+}
 
 
 uint32_t DueAdcFast::to10BitResolution(uint32_t value)
