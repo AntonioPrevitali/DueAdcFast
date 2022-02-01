@@ -478,6 +478,11 @@ uint32_t DueAdcFast::FindValueForPin(uint8_t pin)
 
 uint32_t DueAdcFast::FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM)
 {
+ return FindAvgForPinPos(0,pin,pSkip,nrM);
+}
+
+uint32_t DueAdcFast::FindAvgForPinPos(uint32_t xpos,uint8_t pin,uint16_t pSkip, uint16_t nrM)
+{
   uint16_t xch;
   uint16_t xval;
   uint16_t xchL;
@@ -491,7 +496,10 @@ uint32_t DueAdcFast::FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM)
   // controlla se canale e tra quelli che vengono raccolti/abilitati
   if (!( enabcha & (1 << xch) )) return 0xFFFF;  // canale non enabled
   xch = xch << 12; // like format of CHNB TAG
-  curRPR = ADC->ADC_RPR;
+  if (xpos == 0)
+     curRPR = ADC->ADC_RPR;
+  else
+     curRPR = xpos;
   prpr = (uint16_t*) curRPR;
   if (pSkip > 0)  // se richiesto indietreggia
   {
@@ -538,6 +546,19 @@ uint32_t DueAdcFast::FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM)
   }
   return sumavg / (uint32_t) nrM;
 }
+
+
+// questa GetPosCurr è velocissima e quindi è chiamabile anche
+// mentre si è dentro un interrupt...
+uint32_t DueAdcFast::GetPosCurr(void)
+{
+ uint32_t curRPR;
+ curRPR = ADC->ADC_RPR;
+ return curRPR;
+}
+
+
+
 
 
 uint32_t DueAdcFast::to10BitResolution(uint32_t value)
