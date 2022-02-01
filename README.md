@@ -279,3 +279,18 @@ xgain = 1 increased sensitivity 4095=+1.650v 0=-1.650v.
 
 xgain = 2 even more sensitive   4095=+0.825v 0=-0.825v 
 
+## Version 1.2 adds 2 new methods and add samples Ardu2GridTied :
+
+`uint32_t GetPosCurr(void)`
+
+Get the current position in the buffer to be used later with FindAvgForPinPos.
+for example in an interrupt routine get the position and then in the loop code read the buffer.
+
+`uint32_t FindAvgForPinPos(uint32_t xpos,uint8_t pin,uint16_t pSkip, uint16_t nrM)`
+
+It's like FindAvgForPin but int32 must be passed in the first parameter, returned by GetPosCurr.
+
+In the examples attached to this library I have added an entire project that uses this library.
+The Ardu2GridTied code is provided as an example in this library, the documentation and future versions of Ardu2GridTied [here.](https://github.com/AntonioPrevitali/Ardu2GridTied)
+
+
