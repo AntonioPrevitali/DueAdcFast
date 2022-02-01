@@ -16,3 +16,5 @@ to10BitResolution	KEYWORD2
 oldAnalogRead	KEYWORD2
 FindAvgForPin	KEYWORD2
 SetAllDifGain	KEYWORD2
+GetPosCurr	KEYWORD2
+FindAvgForPinPos	KEYWORD2
