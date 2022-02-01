@@ -52,6 +52,11 @@ class DueAdcFast {
                                         // xgain = 0 = default             4095=+3.300v 0=-3.300v
                                         // xgain = 1 sensibilita aumentata 4095=+1.650v 0=-1.650v
                                         // xgain = 2 ancora piu sensibile  4095=+0.825v 0=-0.825v                                                             
+    uint32_t GetPosCurr(void);   // Consente di ottenere la posizione corrente nel buffer da utilizzare
+                                 // poi con FindAvgForPinPos
+    uint32_t FindAvgForPinPos(uint32_t xpos,uint8_t pin,uint16_t pSkip, uint16_t nrM);
+
+
   private:
     const uint8_t    chtopin[16] = {A7, A6, A5, A4, A3, A2, A1, A0, 0, 0, A8, A9, A10, A11, 0, 0};
     volatile boolean okHandler = false;
