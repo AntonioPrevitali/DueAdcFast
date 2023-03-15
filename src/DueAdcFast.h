@@ -30,30 +30,53 @@ class DueAdcFast {
     void Start(uint8_t prescaler);      // Start at Prescaler Rate.
     float MeasureSpeed();               // measure and return time in microseconds for convert all enabled pin 
     uint32_t ReadAnalogPin(uint8_t pin);   // attende che la misura sia disponibile e ritorna il valore.
+	    // waits for the measurement to be available and returns the value.
     uint32_t FindValueForPin(uint8_t pin); // cerca nel Buffer l'ultima misura disponibile per quel pin.
+	    // search the Buffer for the last measurement available for that pin
     void Stop();                         // Stop DueAdcFast.  Si può tornare ad usare la analogRead originale.
+	    // You can go back to using the original analogRead
     void DisEnabPin(void);              // disabilita i pin abilitati precedentemente con EnablePin/Dif
+	    // disable pins previously enabled with EnablePin/Dif
     uint16_t getMeasures(uint16_t nrMeas, DueAdcFastMeasure meas[], uint32_t* xtime); // see code..
     boolean  isMeasures(void);  // per testare se esistono misure disponibili prima di chiamare la getMeasures
                                 // ma meglio è chiamare la getMeasures che ritorna zero se non ve ne sono.
                                 // se chiamate isMeasures e subito dopo la getMeasures fate 2 volte il check
                                 // e sprecate solo alcuni cicli di cpu.  
+    // to test if there are any available measures before calling getMeasures
+    // but better is to call getMeasures which returns zero if there are none.
+    // if you call isMeasures and immediately after the GetMeasures you check
+    // twice and just waste a few cpu cycles.
+
     uint32_t to10BitResolution(uint32_t value); // convert value to 10 bit resolution (from 12bit)
     uint32_t oldAnalogRead(uint8_t pin);   // non usa buffer, non usa DMA è un ottimizzazione dell'originale.
     // funziona se DueAdcFast non è in Start (deve essere in Stop..)
     // è compatibile con originale solo se usata sul medesimo PIN.
     // questa lavora solo a 12 bit eventualmente usa to10BitResolution
+
+    // does not use buffer or DMA, is an optimization of the original.
+    // it works if DueAdcFast is not in Start (must be in Stop..)
+    // it is compatible with the original only if used on the same PIN.
+    // this works only at 12 bit eventually to use 10 Bit Resolution
+
     // void Test();  // only for debug...
+
     uint32_t FindAvgForPin(uint8_t pin,uint16_t pSkip, uint16_t nrM); // Va nel buffer indietreggia di pSkip posizioni
                                                                       // se pSkip zero non indietreggia
                                                                       // cerca le ultime nrM misure disponibile per quel pin.
                                                                       // fa la media delle nrM misure e ritorna il valore.
+	    // Goes to buffer backs of pSkip positions
+	    // if pSkip zero does not back up
+	    // look for the latest nrM measurements available for that pin.
+	    // averages the nrM measurements and returns the value.
     void SetAllDifGain(uint8_t xgain);  // Imposta il Gain x tutti i canali differenziali 
+	    // Set the Gain x all differential channels
                                         // xgain = 0 = default             4095=+3.300v 0=-3.300v
                                         // xgain = 1 sensibilita aumentata 4095=+1.650v 0=-1.650v
                                         // xgain = 2 ancora piu sensibile  4095=+0.825v 0=-0.825v                                                             
     uint32_t GetPosCurr(void);   // Consente di ottenere la posizione corrente nel buffer da utilizzare
                                  // poi con FindAvgForPinPos
+	    // Gets the current position in the buffer to use
+	    // then with FindAvgForPinPos
     uint32_t FindAvgForPinPos(uint32_t xpos,uint8_t pin,uint16_t pSkip, uint16_t nrM);
 
 

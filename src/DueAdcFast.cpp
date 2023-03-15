@@ -64,9 +64,13 @@ void DueAdcFast::EnableDif(uint8_t pin)
   //
   //
   // In Buffer ho riscontrato che l'ordine con cui arrivano i dati in memoria
+  // In Buffer I found that the order in which the data arrives in memory
   // (nel caso che vengano abilitati tutti i canali) è:
+  // (if all channels are enabled) is:
   // ADC0 ... ADC7 ADC10 ADC11 ADC12 ADC13 corrispondenti ai pin A7 A6 A5 A4 A3 A2 A1 A0 A8 A9 A10 A11
+  // ADC0 ... ADC7 ADC10 ADC11 ADC12 ADC13 corresponds to pin A7 A6 A5 A4 A3 A2 A1 A0 A8 A9 A10 A11
   // la cosa non pone problema perchè viene sincronizzato grazie al TAG.
+  // this does not pose a problem because it is synchronized thanks to the TAG.
   //
   if (pin >= 54 && pin <= 65)
   {
@@ -112,6 +116,8 @@ void DueAdcFast::EnableDif(uint8_t pin)
 
 // disabilita i pin abilitati precedentemente con EnablePin/Dif
 // da usare dopo lo stop se si vuole cambiare i pin e ripartire
+// disable pins previously enabled with EnablePin/Dif
+// to be used after the stop if you want to change the pins and restart
 void DueAdcFast::DisEnabPin(void)
 {
   enablPin = 0;
@@ -447,6 +453,7 @@ uint32_t DueAdcFast::ReadAnalogPin(uint8_t pin)
 
 
 // cerca nel Buffer l'ultima misura disponibile per quel pin.
+// search the Buffer for the last measurement available for that pin.
 uint32_t DueAdcFast::FindValueForPin(uint8_t pin)
 {
   uint16_t xch;
@@ -458,6 +465,7 @@ uint32_t DueAdcFast::FindValueForPin(uint8_t pin)
   if (okStart == false || pin < 54 || pin > 65) return 0xFFFF;
   xch = g_APinDescription[pin].ulADCChannelNumber; // channel to wait
   // controlla se canale e tra quelli che vengono raccolti/abilitati
+  // check if channel is among those that are collected/enabled
   if (!( enabcha & (1 << xch) )) return 0xFFFF;  // canale non enabled
   xch = xch << 12; // like format of CHNB TAG
   curRPR = ADC->ADC_RPR;
@@ -466,6 +474,7 @@ uint32_t DueAdcFast::FindValueForPin(uint8_t pin)
   for (xi = 0; xi < NumChEn; xi++)
   {
     prpr--; // DMA carica valore e avanza il pointer.
+	    // DMA loads value and advances the pointer.
     if (prpr < Buffer) prpr = Buffer + BufSiz - 1;
     xval = *prpr;
     xchL = xval & 0xF000;  // CHNB TAG test
@@ -550,6 +559,8 @@ uint32_t DueAdcFast::FindAvgForPinPos(uint32_t xpos,uint8_t pin,uint16_t pSkip, 
 
 // questa GetPosCurr è velocissima e quindi è chiamabile anche
 // mentre si è dentro un interrupt...
+// this GetPosCurr is very fast and therefore it is also callable
+// while inside an interrupt...
 uint32_t DueAdcFast::GetPosCurr(void)
 {
  uint32_t curRPR;
@@ -574,8 +585,15 @@ uint32_t DueAdcFast::to10BitResolution(uint32_t value)
 // è compatibile con originale solo se usata sul medesimo PIN.
 // questa lavora solo a 12 bit eventualmente usa to10BitResolution
 // E' piu veloce dell'originale
+
+// It does not use buffer, does not use DMA, is an optimization of the original.
+// It works if DueAdcfast is not in start (it must be in Stop ..)
+// It is compatible with original only if used on the same pin.
+// This works only at 12 bit possibly uses to 10bitresolution
+// He is faster than the original
 //
 // volendo cosi miliora ancora...
+// so wanting to improve even more ...
 //      ADC->ADC_MR = 0x18380100;  // 21Mhz...
 //
 uint32_t DueAdcFast::oldAnalogRead(uint8_t pin)
@@ -585,6 +603,8 @@ uint32_t DueAdcFast::oldAnalogRead(uint8_t pin)
   if (okStart || pin < 54 || pin > 65) return 0xFFFF;
   // fa una verifica sul channel status..
   // vede se il canale è già abilitato (esempio da precedente analogRead originale...)
+  // check the channel status..
+  // see if the channel is already enabled (example from previous original analogRead...)
   xcher = (1u << g_APinDescription[pin].ulADCChannelNumber);
   if (ADC->ADC_CHSR != xcher)
   {
@@ -613,7 +633,18 @@ uint32_t DueAdcFast::oldAnalogRead(uint8_t pin)
 //
 //  Se DueAdcFast è in Stop è possibile richiedere tutte le misure in Buffer.
 //  Se DueAdcFast è in Start è consigliabile richiedere alcune misure, max 1/2 Buffer ?
+
+// nrMeas = Number of measurements requested
+// meas[] = array where to load the requested measures. NB size must be >= nrMeas
+// The function returns :
+// The number of measures loaded into array (may be less than nrMeas if not available)
+// via the *xtime parameter the function returns to the caller the micros() time of the
+// last measurement available, meas[0] = last measurement available/performed
+// meas[1] = previous oldest measure.
+// meas[n] = previous previous measure.
 //
+// If DueAdcFast is in Stop it is possible to request all the measurements in Buffer.
+// If DueAdcFast is in Start it is advisable to request some measures, max 1/2 Buffer ?
 uint16_t DueAdcFast::getMeasures(uint16_t nrMeas, DueAdcFastMeasure meas[], uint32_t* xtime)
 {
   uint16_t* prpr;
@@ -636,6 +667,7 @@ uint16_t DueAdcFast::getMeasures(uint16_t nrMeas, DueAdcFastMeasure meas[], uint
     *xtime = lastMs;
   }
   // continua solo se buffer esiste
+  // continue only if buffer exists
   if (!Buffer || BufSiz == 0 || nrMeas == 0) return 0;
   prpr = (uint16_t*) curRPR;
   prprMeas = (uint16_t*) MeasRPR;
@@ -667,6 +699,11 @@ uint16_t DueAdcFast::getMeasures(uint16_t nrMeas, DueAdcFastMeasure meas[], uint
 // ma meglio è chiamare la getMeasures che ritorna zero se non ve ne sono.
 // se chiamate isMeasures e subito dopo la getMeasures fate 2 volte il check
 // e sprecate solo alcuni cicli di cpu.
+//
+// to test if there are measures available before calling getMeasures
+// but better is to call getMeasures which returns zero if there are none.
+// if you call isMeasures and immediately after getMeasures you check twice
+// and just waste a few cpu cycles.
 //
 boolean DueAdcFast::isMeasures(void)
 {
