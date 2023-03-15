@@ -21,7 +21,7 @@ DueAdcFast::DueAdcFast(uint16_t sizeBuffer)
     Buffer = new(uint16_t[BufSiz]);
     if (Buffer)
     {
-      memset(Buffer, 0xFF, BufSiz * 2); // clear 00 is CHNB valid!
+      memset(Buffer, 0xFF, BufSiz * sizeof(uint16_t)); // clear 00 is CHNB valid!
     }
   }
 }
@@ -289,7 +289,7 @@ void DueAdcFast::gostart(boolean x21, uint16_t prescaler)
   {
     if (enablPin && Buffer) // start only if enabled pin e buffer allocated...
     {
-      memset(Buffer, 0xFF, BufSiz * 2); // clear buffer.
+      memset(Buffer, 0xFF, BufSiz * sizeof(uint16_t)); // clear buffer.
       memRegister();      // to restore state at stop..
       ADC->ADC_MR = 0x10380200;       // is default arduino DUE
       ADC->ADC_IDR = ~ADC_IDR_ENDRX;  // all disable (not ENDRX)
