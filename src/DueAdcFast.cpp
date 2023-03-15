@@ -18,7 +18,7 @@ DueAdcFast::DueAdcFast(uint16_t sizeBuffer)
   if (BufSiz > 0)
   {
     // buffer allocate and set to zero.
-    Buffer = new(uint16_t[BufSiz * 2]); // uint16_t is 2 byte
+    Buffer = new(uint16_t[BufSiz]);
     if (Buffer)
     {
       memset(Buffer, 0xFF, BufSiz * 2); // clear 00 is CHNB valid!
